@@ -1,7 +1,17 @@
 <template>
     <div>
-      <h1>Bienvenido a Telkings</h1>
-      <p>Esta es la página principal.</p>
+      <p>Redirigiendo...</p>
     </div>
   </template>
+  
+  <script setup>
+  import { useRouter } from 'vue-router'
+  import { onMounted } from 'vue'
+  
+  const router = useRouter()
+  
+  onMounted(() => {
+    router.push('/dashboard') // Redirige a la página de Dashboard
+  })
+  </script>
   
