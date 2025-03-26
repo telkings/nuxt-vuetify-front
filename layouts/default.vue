@@ -99,7 +99,9 @@
 <script setup>
 import { ref } from "vue";
 import { useRoute } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
+const auth = useAuthStore(); //Extrae el estado de la store de pinia
 const drawer = ref(true);
 const $route = useRoute();
 const showWhatsappDialog = ref(false);
@@ -107,9 +109,6 @@ const showWhatsappDialog = ref(false);
 const openWhatsApp = () => {
   window.open("https://wa.me/573112701507", "_blank");
 };
-
-const userName = ref("Fabian Guzman");
-const userEmail = ref("fabian@gmail.com");
 
 // Definir opciones del menú
 const menuItems = [
@@ -124,7 +123,9 @@ const menuItems = [
 
 const logout = () => {
   console.log("Cerrando sesión...");
-  // Aquí puedes agregar la lógica para cerrar sesión
+  // llama la funcion logout de store auth con pinia
+  auth.logout();
+  navigateTo("/login"); // Redirige al login sin necesidad de useRouter()
 };
 </script>
 

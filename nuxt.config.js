@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   },
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
-  modules: ["@nuxt/eslint", "@nuxt/scripts"],
+  modules: ["@nuxt/eslint", "@nuxt/scripts","@pinia/nuxt"],
   css: ["vuetify/styles"], // Agrega Vuetify a los estilos globales
   build: {
     transpile: ["vuetify"], // Asegura que Vuetify se transpile correctamente
