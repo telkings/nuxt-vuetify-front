@@ -95,6 +95,9 @@
       </v-card-text>
     </v-card>
   </v-dialog>
+  <v-snackbar v-model="snackbar" color="success" :timeout="3000" location="top right">
+  {{ snackbarText }}
+</v-snackbar>
 </v-container>
 </template>
 
@@ -115,6 +118,9 @@ const nombreDispositivo = ref("");
 const tipoRecurso = ref("");
 const orientacion = ref("");
 const escalaImagen = ref("fit"); // Valor inicial recomendado para la escala
+const snackbar = ref(false);
+const snackbarText = ref('');
+
 
 // Lista de imágenes disponibles en DigitalOcean
 const imagenesDisponibles = ref([
@@ -173,6 +179,24 @@ const guardarPantalla = () => {
   console.log("Recurso => " + tipoRecurso.value);
   console.log("Orientacion => " + orientacion.value);
   console.log("Escala Imagen => " + escalaImagen.value);
+  
+
+   // Aquí iría la lógica real de guardado (llamada a API, etc.)
+
+    // Mostrar snackbar
+  snackbarText.value = 'Pantalla guardada con éxito';
+  snackbar.value = true;
+
+  // Limpia todos los campos
+  codigoVinculacion.value = "";
+  nombreDispositivo.value = "";
+  tipoRecurso.value = "";
+  orientacion.value = "";
+  escalaImagen.value = "fit";
+  nombreImagen.value = "";
+  isLinked.value = false;
+
+  // Cierra el modal
   dialog.value = false; // Cierra el modal
 };
 

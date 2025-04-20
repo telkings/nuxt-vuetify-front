@@ -28,6 +28,10 @@
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-toolbar-title>Telkings</v-toolbar-title>
       <v-spacer />
+      <!-- Nombre del usuario (cerca al avatar) -->
+          <div class="mr-3 text-subtitle-1">
+             {{ userName }}
+         </div>
 
       <!-- Menú de usuario -->
       <v-menu>
@@ -99,8 +103,10 @@
 <script setup>
 import { ref } from "vue";
 import { useRoute } from "vue-router";
+import { computed } from 'vue';
 import { useAuthStore } from "@/stores/auth";
 
+const userName = computed(() => auth.user?.name || 'Usuario');
 const auth = useAuthStore(); //Extrae el estado de la store de pinia
 const drawer = ref(true);
 const $route = useRoute();

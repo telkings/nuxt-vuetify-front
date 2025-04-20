@@ -12,7 +12,7 @@
       type="password"
       required
     ></v-text-field>
-    <v-btn @click="login" type="submit" color="primary" block
+    <v-btn type="submit" color="primary" block
       >Iniciar Sesión</v-btn
     >
     <p class="text-center mt-2">
@@ -34,11 +34,22 @@ const auth = useAuthStore();
 const email = ref("");
 const password = ref("");
 
-const login = () => {
-  const success = auth.login({ email: email.value, password: password.value });
+const login = async () => {
+  const success = await auth.login({ email: email.value, password: password.value });
+
   if (success) {
-    console.log("Inicio de sesión exitoso");
-    navigateTo("/dashboard");
+    // Verificar si el token está en localStorage
+    const token = localStorage.getItem("token");
+    if (token) {
+      console.log("Redirigiendo...");
+      navigateTo("/dashboard");
+    } else {
+      console.error("❌ No se encontró el token en localStorage");
+    }
+  } else {
+    console.log("❌ Login fallido");
   }
 };
+
+
 </script>
