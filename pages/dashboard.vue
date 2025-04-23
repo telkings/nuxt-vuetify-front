@@ -26,28 +26,29 @@
           <!-- Nombre del dispositivo -->
           <v-text-field
             v-model="nombreDispositivo"
-            label="Nombre del Dispositivo"
+            label="Nombre de Pantalla"
             outlined
           />
-
-          <!-- Tipo de recurso: imagen, video o página web -->
-          <v-select
-            v-model="tipoRecurso"
-            :items="['Imagen', 'Video', 'Página Web']"
-            label="Tipo de Recurso"
+            <!-- Donde fisicamente se ubica la pantalla -->
+            <v-text-field
+            v-model="ubicacion"
+            label="Ubicacion Pantalla"
             outlined
           />
 
           <!-- Orientación de pantalla -->
           <v-select
             v-model="orientacion"
-            :items="['Vertical', 'Horizontal']"
+            :items="['vertical', 'horizontal']"
             label="Orientación"
             outlined
+            dense
+            prepend-icon="mdi-monitor"
+            append-icon="mdi-menu-down"
           />
 
           <!-- Selector para la escala de imagen -->
-          <v-select
+       <!--    <v-select
             v-model="escalaImagen"
             label="Escala de Imagen"
             :items="[
@@ -59,16 +60,16 @@
             item-title="text"
             item-value="value"
             outlined
-          />
+          /> -->
 
           <!-- Selector para elegir una imagen disponible -->
-          <v-select
+         <!--  <v-select
             v-model="nombreImagen"
             label="Selecciona una imagen"
             :items="imagenesDisponibles"
             outlined
             class="mt-2"
-          />
+          /> -->
 
           <!-- Vista previa de la imagen seleccionada y su escala -->
           <v-card class="mt-4" outlined v-if="nombreImagen">
@@ -95,7 +96,7 @@
       </v-card-text>
     </v-card>
   </v-dialog>
-  <v-snackbar v-model="snackbar" color="success" :timeout="3000" location="top right">
+  <v-snackbar v-model="snackbar" :color="snackbarColor" :timeout="3000" location="top right">
   {{ snackbarText }}
 </v-snackbar>
 </v-container>
@@ -103,6 +104,7 @@
 
 <script setup>
 import { ref, computed } from "vue";
+import axios from "axios";
 
 // Configura la página con un layout y middleware de autenticación
 definePageMeta({
@@ -110,17 +112,19 @@ definePageMeta({
   middleware: "auth",
 });
 
+const token = localStorage.getItem("token");
+
 // Variables reactivas
 const dialog = ref(false); // Controla la visibilidad del diálogo
 const isLinked = ref(false); // Verifica si ya se vinculó la pantalla
 const codigoVinculacion = ref("");
 const nombreDispositivo = ref("");
-const tipoRecurso = ref("");
+const ubicacion = ref("");
 const orientacion = ref("");
 const escalaImagen = ref("fit"); // Valor inicial recomendado para la escala
 const snackbar = ref(false);
 const snackbarText = ref('');
-
+const snackbarColor = ref('');
 
 // Lista de imágenes disponibles en DigitalOcean
 const imagenesDisponibles = ref([
@@ -165,39 +169,90 @@ const imageStyles = computed(() => {
   };
 });
 
-// Simula vinculación de pantalla al hacer clic
-const vincularPantalla = () => {
-  if (codigoVinculacion.value.trim()) {
-    isLinked.value = true;
+
+const vincularPantalla = async () => {
+
+  try {
+    const { data } = await axios.post('http://localhost:5000/api/validate/validate-code', {
+      codigo: codigoVinculacion.value
+    });
+
+    if (data.valido) {
+      isLinked.value = true;
+      snackbarText.value = 'CODIGO EMPAREJADO EXISTOSAMENTE.'
+      snackbarColor.value = 'success';
+      snackbar.value = true
+    } else {
+      snackbarText.value = 'CODIGO NO VALIDO.'
+      snackbarColor.value = 'red';
+      snackbar.value = true
+    }
+
+  } catch (err) {
+    console.error(err);
+    snackbarText.value = 'CAMPO VACIO INGRESE CODIGO DE PANTALLA.'
+    snackbarColor.value = 'red';
+    snackbar.value = true
   }
-};
 
-// Imprime la configuración de la pantalla al hacer clic en "Guardar"
-const guardarPantalla = () => {
-  console.log("Codigo => " + codigoVinculacion.value);
-  console.log("Nombre Dispositivo => " + nombreDispositivo.value);
-  console.log("Recurso => " + tipoRecurso.value);
-  console.log("Orientacion => " + orientacion.value);
-  console.log("Escala Imagen => " + escalaImagen.value);
+}
+
+const guardarPantalla = async () => {
+
+  if (!nombreDispositivo.value.trim() || !ubicacion.value.trim() || !orientacion.value) {
+    snackbarText.value = 'Por favor completa todos los campos.'
+    snackbarColor.value = 'error'
+    snackbar.value = true
+    return
+  }
+
+  try {
+    const res = await axios.post(
+      'http://localhost:5000/api/screens/create-screen',
+      {
+       codigo_vinculacion: codigoVinculacion.value,
+       nombre_pantalla: nombreDispositivo.value,
+       ubicacion: ubicacion.value,
+       orientacion: orientacion.value
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    )
+
+    if (res.data && res.data.valido) {
+
+      isLinked.value = true
+      // Mostrar snackbar
+      snackbarText.value = 'Pantalla guardada con éxito.'
+      snackbarColor.value = 'success';
+      snackbar.value = true
+
+       // Limpia todos los campos
+      codigoVinculacion.value = "";
+      nombreDispositivo.value = "";
+      orientacion.value = "";
+      ubicacion.value = "";
+      escalaImagen.value = "fit";
+      nombreImagen.value = "";
+
+      isLinked.value = false; // ya vinculo pantalla
+      dialog.value = false; // Cierra el modal
   
+    } else {
+      snackbarText.value = 'Código no válido o ya usado.'
+      snackbarColor.value = 'red';
+      snackbar.value = true
+    }
+  } catch (error) {
+    snackbarText.value = 'Error al verificar el código.'
+    snackbarColor.value = 'red';
+    snackbar.value = true
+    console.error(error)
+  }
 
-   // Aquí iría la lógica real de guardado (llamada a API, etc.)
-
-    // Mostrar snackbar
-  snackbarText.value = 'Pantalla guardada con éxito';
-  snackbar.value = true;
-
-  // Limpia todos los campos
-  codigoVinculacion.value = "";
-  nombreDispositivo.value = "";
-  tipoRecurso.value = "";
-  orientacion.value = "";
-  escalaImagen.value = "fit";
-  nombreImagen.value = "";
-  isLinked.value = false;
-
-  // Cierra el modal
-  dialog.value = false; // Cierra el modal
 };
 
 </script>
