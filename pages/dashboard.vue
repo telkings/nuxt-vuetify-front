@@ -91,7 +91,12 @@
           </v-card>
 
           <!-- Botón para guardar configuración -->
-          <v-btn color="success" class="ml-2" @click="guardarPantalla">Guardar</v-btn>
+          <!-- <v-btn color="success" class="ml-2" @click="guardarPantalla">Guardar</v-btn> -->
+           <!-- Botones de acciones -->
+           <v-card-actions class="justify-end mt-4">
+            <v-btn color="grey" text @click="cancelarCrearPantalla">Cancelar</v-btn>
+            <v-btn color="success" class="ml-2" @click="guardarPantalla">Guardar</v-btn>
+          </v-card-actions>
         </v-form>
       </v-card-text>
     </v-card>
@@ -103,8 +108,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import axios from "axios";
+
+const getToken = ref(null);
 
 // Configura la página con un layout y middleware de autenticación
 definePageMeta({
@@ -112,7 +119,10 @@ definePageMeta({
   middleware: "auth",
 });
 
-const token = localStorage.getItem("token");
+onMounted(() => {
+  getToken.value = localStorage.getItem('token');
+  //console.log("Se monto el Mounted y el token con => "+getToken.value)
+});
 
 // Variables reactivas
 const dialog = ref(false); // Controla la visibilidad del diálogo
@@ -205,7 +215,7 @@ const guardarPantalla = async () => {
     snackbar.value = true
     return
   }
-
+      
   try {
     const res = await axios.post(
       'http://localhost:5000/api/screens/create-screen',
@@ -217,7 +227,7 @@ const guardarPantalla = async () => {
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${getToken.value}`
         }
       }
     )
@@ -253,6 +263,19 @@ const guardarPantalla = async () => {
     console.error(error)
   }
 
+};
+
+const cancelarCrearPantalla = () => {
+  //limpiar los campos
+  codigoVinculacion.value = "";
+  nombreDispositivo.value = "";
+  ubicacion.value = "";
+  orientacion.value = "";
+  //escalaImagen.value = "fit";
+  //nombreImagen.value = "";
+
+  isLinked.value = false; // vuelve a pedir codigo de vinculacion
+  dialog.value = false; // cierra el modal
 };
 
 </script>

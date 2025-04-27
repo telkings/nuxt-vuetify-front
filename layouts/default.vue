@@ -1,10 +1,10 @@
 <template>
   <v-app>
     <!-- Menú lateral -->
-    <v-navigation-drawer v-model="drawer" app>
+    <v-navigation-drawer v-if="isClient" v-model="drawer" app>
       <!-- Logo -->
       <v-img
-        src="/images/logo.png"
+        src="/images/telkings_logo_1920_540.png"
         max-width="200"
         max-height="80"
         contain
@@ -105,12 +105,35 @@ import { ref } from "vue";
 import { useRoute } from "vue-router";
 import { computed } from 'vue';
 import { useAuthStore } from "@/stores/auth";
+import { onMounted } from 'vue'
 
+const isClient = ref(false)
+const auth = useAuthStore(); // Accede al store de Pinia
 const userName = computed(() => auth.user?.name || 'Usuario');
-const auth = useAuthStore(); //Extrae el estado de la store de pinia
+const userEmail = computed(() => auth.user?.email || 'correo');
 const drawer = ref(true);
 const $route = useRoute();
 const showWhatsappDialog = ref(false);
+
+onMounted(() => {
+  isClient.value = true
+
+  /* console.log("auth.user al montar:", auth.user);
+  console.log("Nombre de usuario:", userName.value);
+
+  console.log(localStorage.getItem('user')); 
+  console.log(localStorage.getItem('token'));  */
+})
+
+// Usar un watch para estar atentos a los cambios de auth.user
+watch(
+  () => auth.user, // Observar el valor de auth.user
+  (newUser) => {
+    if (newUser) {
+      //console.log("usuario cargado =>", newUser.name);
+    }
+  }
+);
 
 const openWhatsApp = () => {
   window.open("https://wa.me/573112701507", "_blank");
